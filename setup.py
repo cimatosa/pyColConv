@@ -8,7 +8,7 @@ setup(
     version='0.1',
 
     # Description of your Package
-    description='make little CMS 2 available for python3',
+    description='implement color transformations using Little CMS for python3',
 
     # Website for your Project or Github repo
     url="https://github.com/cimatosa/pylcms2",
@@ -34,9 +34,9 @@ setup(
 
     ext_modules=[
         Extension(
-            name="pylcms2",  # as it would be imported
-                             # may include packages/namespaces separated by `.`
-            sources=["./src/_pylcms2.c"], # all sources are compiled into a single binary file
+            name="_lcms2",  # as it would be imported
+                            # may include packages/namespaces separated by `.`
+            sources=["./pylcms2/_lcms2.c"], # all sources are compiled into a single binary file
             libraries = ['lcms2'],
             extra_compile_args = ['-std=gnu99']
         ),
