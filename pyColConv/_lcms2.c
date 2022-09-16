@@ -224,6 +224,35 @@ PyMODINIT_FUNC PyInit__lcms2(void)
     PyModule_AddIntConstant(m, "TYPE_BGRA_HALF_FLT", TYPE_BGRA_HALF_FLT);
     PyModule_AddIntConstant(m, "TYPE_ABGR_HALF_FLT", TYPE_ABGR_HALF_FLT);
 
+    PyModule_AddIntConstant(m, "PT_GRAY", PT_GRAY);
+    PyModule_AddIntConstant(m, "PT_RGB", PT_RGB);
+    PyModule_AddIntConstant(m, "PT_CMY", PT_CMY);
+    PyModule_AddIntConstant(m, "PT_CMYK", PT_CMYK);
+    PyModule_AddIntConstant(m, "PT_YCbCr", PT_YCbCr);
+    PyModule_AddIntConstant(m, "PT_YUV", PT_YUV);
+    PyModule_AddIntConstant(m, "PT_XYZ", PT_XYZ);
+    PyModule_AddIntConstant(m, "PT_Lab", PT_Lab);
+    PyModule_AddIntConstant(m, "PT_YUVK", PT_YUVK);
+    PyModule_AddIntConstant(m, "PT_HSV", PT_HSV);
+    PyModule_AddIntConstant(m, "PT_HLS", PT_HLS);
+    PyModule_AddIntConstant(m, "PT_Yxy", PT_Yxy);
+    PyModule_AddIntConstant(m, "PT_MCH1", PT_MCH1);
+    PyModule_AddIntConstant(m, "PT_MCH2", PT_MCH2);
+    PyModule_AddIntConstant(m, "PT_MCH3", PT_MCH3);
+    PyModule_AddIntConstant(m, "PT_MCH4", PT_MCH4);
+    PyModule_AddIntConstant(m, "PT_MCH5", PT_MCH5);
+    PyModule_AddIntConstant(m, "PT_MCH6", PT_MCH6);
+    PyModule_AddIntConstant(m, "PT_MCH7", PT_MCH7);
+    PyModule_AddIntConstant(m, "PT_MCH8", PT_MCH8);
+    PyModule_AddIntConstant(m, "PT_MCH9", PT_MCH9);
+    PyModule_AddIntConstant(m, "PT_MCH10", PT_MCH10);
+    PyModule_AddIntConstant(m, "PT_MCH11", PT_MCH11);
+    PyModule_AddIntConstant(m, "PT_MCH12", PT_MCH12);
+    PyModule_AddIntConstant(m, "PT_MCH13", PT_MCH13);
+    PyModule_AddIntConstant(m, "PT_MCH14", PT_MCH14);
+    PyModule_AddIntConstant(m, "PT_MCH15", PT_MCH15);
+    PyModule_AddIntConstant(m, "PT_LabV2", PT_LabV2);
+
     return m;
 }
 

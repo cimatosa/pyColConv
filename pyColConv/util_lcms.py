@@ -1,0 +1,297 @@
+import _lcms2
+
+# Format of pixel is defined by one cmsUInt32Number, using bit fields as follows
+#
+#                               2                1          0
+#                        4 3 2 10987 6 5 4 3 2 1 098 7654 321
+#                        M A O TTTTT U Y F P X S EEE CCCC BBB
+#
+#            M: Premultiplied alpha (only works when extra samples is 1)
+#            A: Floating point -- With this flag we can differentiate 16 bits as float and as int
+#            O: Optimized -- previous optimization already returns the final 8-bit value
+#            T: Pixeltype
+#            F: Flavor  0=MinIsBlack(Chocolate) 1=MinIsWhite(Vanilla)
+#            P: Planar? 0=Chunky, 1=Planar
+#            X: swap 16 bps endianness?
+#            S: Do swap? ie, BGR, KYMC
+#            E: Extra samples
+#            C: Channels (Samples per pixel)
+#            B: bytes per sample
+#            Y: Swap first - changes ABGR to BGRA and KCMY to CMYK
+
+PREMUL_SH = lambda m: ((m) << 23)
+FLOAT_SH = lambda a: ((a) << 22)
+OPTIMIZED_SH = lambda s: ((s) << 21)
+COLORSPACE_SH = lambda s: ((s) << 16)
+SWAPFIRST_SH = lambda s: ((s) << 14)
+FLAVOR_SH = lambda s: ((s) << 13)
+PLANAR_SH = lambda p: ((p) << 12)
+ENDIAN16_SH = lambda e: ((e) << 11)
+DOSWAP_SH = lambda e: ((e) << 10)
+EXTRA_SH = lambda e: ((e) << 7)
+CHANNELS_SH = lambda c: ((c) << 3)
+BYTES_SH = lambda b: (b)
+
+# These macros unpack format specifiers into integers
+T_PREMUL = lambda m: (((m) >> 23) & 1)
+T_FLOAT = lambda a: (((a) >> 22) & 1)
+T_OPTIMIZED = lambda o: (((o) >> 21) & 1)
+T_COLORSPACE = lambda s: (((s) >> 16) & 31)
+T_SWAPFIRST = lambda s: (((s) >> 14) & 1)
+T_FLAVOR = lambda s: (((s) >> 13) & 1)
+T_PLANAR = lambda p: (((p) >> 12) & 1)
+T_ENDIAN16 = lambda e: (((e) >> 11) & 1)
+T_DOSWAP = lambda e: (((e) >> 10) & 1)
+T_EXTRA = lambda e: (((e) >> 7) & 7)
+T_CHANNELS = lambda c: (((c) >> 3) & 15)
+T_BYTES = lambda b: ((b) & 7)
+
+# rendering intents
+INTENT_PERCEPTUAL = _lcms2.INTENT_PERCEPTUAL
+INTENT_RELATIVE_COLORIMETRIC = _lcms2.INTENT_RELATIVE_COLORIMETRIC
+INTENT_SATURATION = _lcms2.INTENT_SATURATION
+INTENT_ABSOLUTE_COLORIMETRIC = _lcms2.INTENT_ABSOLUTE_COLORIMETRIC
+
+# CMS Flags
+cmsFLAGS_NOCACHE = _lcms2.cmsFLAGS_NOCACHE
+cmsFLAGS_NOOPTIMIZE = _lcms2.cmsFLAGS_NOOPTIMIZE
+cmsFLAGS_NULLTRANSFORM = _lcms2.cmsFLAGS_NULLTRANSFORM
+cmsFLAGS_GAMUTCHECK = _lcms2.cmsFLAGS_GAMUTCHECK
+cmsFLAGS_SOFTPROOFING = _lcms2.cmsFLAGS_SOFTPROOFING
+cmsFLAGS_BLACKPOINTCOMPENSATION = _lcms2.cmsFLAGS_BLACKPOINTCOMPENSATION
+cmsFLAGS_NOWHITEONWHITEFIXUP = _lcms2.cmsFLAGS_NOWHITEONWHITEFIXUP
+cmsFLAGS_HIGHRESPRECALC = _lcms2.cmsFLAGS_HIGHRESPRECALC
+cmsFLAGS_LOWRESPRECALC = _lcms2.cmsFLAGS_LOWRESPRECALC
+cmsFLAGS_8BITS_DEVICELINK = _lcms2.cmsFLAGS_8BITS_DEVICELINK
+cmsFLAGS_GUESSDEVICECLASS = _lcms2.cmsFLAGS_GUESSDEVICECLASS
+cmsFLAGS_KEEP_SEQUENCE = _lcms2.cmsFLAGS_KEEP_SEQUENCE
+cmsFLAGS_FORCE_CLUT = _lcms2.cmsFLAGS_FORCE_CLUT
+cmsFLAGS_CLUT_POST_LINEARIZATION = _lcms2.cmsFLAGS_CLUT_POST_LINEARIZATION
+cmsFLAGS_CLUT_PRE_LINEARIZATION = _lcms2.cmsFLAGS_CLUT_PRE_LINEARIZATION
+cmsFLAGS_NONEGATIVES = _lcms2.cmsFLAGS_NONEGATIVES
+cmsFLAGS_NODEFAULTRESOURCEDEF = _lcms2.cmsFLAGS_NODEFAULTRESOURCEDEF
+cmsFLAGS_COPY_ALPHA = _lcms2.cmsFLAGS_COPY_ALPHA
+
+# color spaces
+TYPE_GRAY_8 = _lcms2.TYPE_GRAY_8
+TYPE_GRAY_8_REV = _lcms2.TYPE_GRAY_8_REV
+TYPE_GRAY_16 = _lcms2.TYPE_GRAY_16
+TYPE_GRAY_16_REV = _lcms2.TYPE_GRAY_16_REV
+TYPE_GRAY_16_SE = _lcms2.TYPE_GRAY_16_SE
+TYPE_GRAYA_8 = _lcms2.TYPE_GRAYA_8
+TYPE_GRAYA_16 = _lcms2.TYPE_GRAYA_16
+TYPE_GRAYA_16_SE = _lcms2.TYPE_GRAYA_16_SE
+TYPE_GRAYA_8_PLANAR = _lcms2.TYPE_GRAYA_8_PLANAR
+TYPE_GRAYA_16_PLANAR = _lcms2.TYPE_GRAYA_16_PLANAR
+TYPE_RGB_8 = _lcms2.TYPE_RGB_8
+TYPE_RGB_8_PLANAR = _lcms2.TYPE_RGB_8_PLANAR
+TYPE_BGR_8 = _lcms2.TYPE_BGR_8
+TYPE_BGR_8_PLANAR = _lcms2.TYPE_BGR_8_PLANAR
+TYPE_RGB_16 = _lcms2.TYPE_RGB_16
+TYPE_RGB_16_PLANAR = _lcms2.TYPE_RGB_16_PLANAR
+TYPE_RGB_16_SE = _lcms2.TYPE_RGB_16_SE
+TYPE_BGR_16 = _lcms2.TYPE_BGR_16
+TYPE_BGR_16_PLANAR = _lcms2.TYPE_BGR_16_PLANAR
+TYPE_BGR_16_SE = _lcms2.TYPE_BGR_16_SE
+TYPE_RGBA_8 = _lcms2.TYPE_RGBA_8
+TYPE_RGBA_8_PLANAR = _lcms2.TYPE_RGBA_8_PLANAR
+TYPE_RGBA_16 = _lcms2.TYPE_RGBA_16
+TYPE_RGBA_16_PLANAR = _lcms2.TYPE_RGBA_16_PLANAR
+TYPE_RGBA_16_SE = _lcms2.TYPE_RGBA_16_SE
+TYPE_ARGB_8 = _lcms2.TYPE_ARGB_8
+TYPE_ARGB_8_PLANAR = _lcms2.TYPE_ARGB_8_PLANAR
+TYPE_ARGB_16 = _lcms2.TYPE_ARGB_16
+TYPE_ABGR_8 = _lcms2.TYPE_ABGR_8
+TYPE_ABGR_8_PLANAR = _lcms2.TYPE_ABGR_8_PLANAR
+TYPE_ABGR_16 = _lcms2.TYPE_ABGR_16
+TYPE_ABGR_16_PLANAR = _lcms2.TYPE_ABGR_16_PLANAR
+TYPE_ABGR_16_SE = _lcms2.TYPE_ABGR_16_SE
+TYPE_BGRA_8 = _lcms2.TYPE_BGRA_8
+TYPE_BGRA_8_PLANAR = _lcms2.TYPE_BGRA_8_PLANAR
+TYPE_BGRA_16 = _lcms2.TYPE_BGRA_16
+TYPE_BGRA_16_SE = _lcms2.TYPE_BGRA_16_SE
+TYPE_CMY_8 = _lcms2.TYPE_CMY_8
+TYPE_CMY_8_PLANAR = _lcms2.TYPE_CMY_8_PLANAR
+TYPE_CMY_16 = _lcms2.TYPE_CMY_16
+TYPE_CMY_16_PLANAR = _lcms2.TYPE_CMY_16_PLANAR
+TYPE_CMY_16_SE = _lcms2.TYPE_CMY_16_SE
+TYPE_CMYK_8 = _lcms2.TYPE_CMYK_8
+TYPE_CMYKA_8 = _lcms2.TYPE_CMYKA_8
+TYPE_CMYK_8_REV = _lcms2.TYPE_CMYK_8_REV
+TYPE_YUVK_8 = _lcms2.TYPE_YUVK_8
+TYPE_CMYK_8_PLANAR = _lcms2.TYPE_CMYK_8_PLANAR
+TYPE_CMYK_16 = _lcms2.TYPE_CMYK_16
+TYPE_CMYK_16_REV = _lcms2.TYPE_CMYK_16_REV
+TYPE_YUVK_16 = _lcms2.TYPE_YUVK_16
+TYPE_CMYK_16_PLANAR = _lcms2.TYPE_CMYK_16_PLANAR
+TYPE_CMYK_16_SE = _lcms2.TYPE_CMYK_16_SE
+TYPE_KYMC_8 = _lcms2.TYPE_KYMC_8
+TYPE_KYMC_16 = _lcms2.TYPE_KYMC_16
+TYPE_KYMC_16_SE = _lcms2.TYPE_KYMC_16_SE
+TYPE_KCMY_8 = _lcms2.TYPE_KCMY_8
+TYPE_KCMY_8_REV = _lcms2.TYPE_KCMY_8_REV
+TYPE_KCMY_16 = _lcms2.TYPE_KCMY_16
+TYPE_KCMY_16_REV = _lcms2.TYPE_KCMY_16_REV
+TYPE_KCMY_16_SE = _lcms2.TYPE_KCMY_16_SE
+TYPE_CMYK5_8 = _lcms2.TYPE_CMYK5_8
+TYPE_CMYK5_16 = _lcms2.TYPE_CMYK5_16
+TYPE_CMYK5_16_SE = _lcms2.TYPE_CMYK5_16_SE
+TYPE_KYMC5_8 = _lcms2.TYPE_KYMC5_8
+TYPE_KYMC5_16 = _lcms2.TYPE_KYMC5_16
+TYPE_KYMC5_16_SE = _lcms2.TYPE_KYMC5_16_SE
+TYPE_CMYK6_8 = _lcms2.TYPE_CMYK6_8
+TYPE_CMYK6_8_PLANAR = _lcms2.TYPE_CMYK6_8_PLANAR
+TYPE_CMYK6_16 = _lcms2.TYPE_CMYK6_16
+TYPE_CMYK6_16_PLANAR = _lcms2.TYPE_CMYK6_16_PLANAR
+TYPE_CMYK6_16_SE = _lcms2.TYPE_CMYK6_16_SE
+TYPE_CMYK7_8 = _lcms2.TYPE_CMYK7_8
+TYPE_CMYK7_16 = _lcms2.TYPE_CMYK7_16
+TYPE_CMYK7_16_SE = _lcms2.TYPE_CMYK7_16_SE
+TYPE_KYMC7_8 = _lcms2.TYPE_KYMC7_8
+TYPE_KYMC7_16 = _lcms2.TYPE_KYMC7_16
+TYPE_KYMC7_16_SE = _lcms2.TYPE_KYMC7_16_SE
+TYPE_CMYK8_8 = _lcms2.TYPE_CMYK8_8
+TYPE_CMYK8_16 = _lcms2.TYPE_CMYK8_16
+TYPE_CMYK8_16_SE = _lcms2.TYPE_CMYK8_16_SE
+TYPE_KYMC8_8 = _lcms2.TYPE_KYMC8_8
+TYPE_KYMC8_16 = _lcms2.TYPE_KYMC8_16
+TYPE_KYMC8_16_SE = _lcms2.TYPE_KYMC8_16_SE
+TYPE_CMYK9_8 = _lcms2.TYPE_CMYK9_8
+TYPE_CMYK9_16 = _lcms2.TYPE_CMYK9_16
+TYPE_CMYK9_16_SE = _lcms2.TYPE_CMYK9_16_SE
+TYPE_KYMC9_8 = _lcms2.TYPE_KYMC9_8
+TYPE_KYMC9_16 = _lcms2.TYPE_KYMC9_16
+TYPE_KYMC9_16_SE = _lcms2.TYPE_KYMC9_16_SE
+TYPE_CMYK10_8 = _lcms2.TYPE_CMYK10_8
+TYPE_CMYK10_16 = _lcms2.TYPE_CMYK10_16
+TYPE_CMYK10_16_SE = _lcms2.TYPE_CMYK10_16_SE
+TYPE_KYMC10_8 = _lcms2.TYPE_KYMC10_8
+TYPE_KYMC10_16 = _lcms2.TYPE_KYMC10_16
+TYPE_KYMC10_16_SE = _lcms2.TYPE_KYMC10_16_SE
+TYPE_CMYK11_8 = _lcms2.TYPE_CMYK11_8
+TYPE_CMYK11_16 = _lcms2.TYPE_CMYK11_16
+TYPE_CMYK11_16_SE = _lcms2.TYPE_CMYK11_16_SE
+TYPE_KYMC11_8 = _lcms2.TYPE_KYMC11_8
+TYPE_KYMC11_16 = _lcms2.TYPE_KYMC11_16
+TYPE_KYMC11_16_SE = _lcms2.TYPE_KYMC11_16_SE
+TYPE_CMYK12_8 = _lcms2.TYPE_CMYK12_8
+TYPE_CMYK12_16 = _lcms2.TYPE_CMYK12_16
+TYPE_CMYK12_16_SE = _lcms2.TYPE_CMYK12_16_SE
+TYPE_KYMC12_8 = _lcms2.TYPE_KYMC12_8
+TYPE_KYMC12_16 = _lcms2.TYPE_KYMC12_16
+TYPE_KYMC12_16_SE = _lcms2.TYPE_KYMC12_16_SE
+TYPE_XYZ_16 = _lcms2.TYPE_XYZ_16
+TYPE_Lab_8 = _lcms2.TYPE_Lab_8
+TYPE_LabV2_8 = _lcms2.TYPE_LabV2_8
+TYPE_ALab_8 = _lcms2.TYPE_ALab_8
+TYPE_ALabV2_8 = _lcms2.TYPE_ALabV2_8
+TYPE_Lab_16 = _lcms2.TYPE_Lab_16
+TYPE_LabV2_16 = _lcms2.TYPE_LabV2_16
+TYPE_Yxy_16 = _lcms2.TYPE_Yxy_16
+TYPE_YCbCr_8 = _lcms2.TYPE_YCbCr_8
+TYPE_YCbCr_8_PLANAR = _lcms2.TYPE_YCbCr_8_PLANAR
+TYPE_YCbCr_16 = _lcms2.TYPE_YCbCr_16
+TYPE_YCbCr_16_PLANAR = _lcms2.TYPE_YCbCr_16_PLANAR
+TYPE_YCbCr_16_SE = _lcms2.TYPE_YCbCr_16_SE
+TYPE_YUV_8 = _lcms2.TYPE_YUV_8
+TYPE_YUV_8_PLANAR = _lcms2.TYPE_YUV_8_PLANAR
+TYPE_YUV_16 = _lcms2.TYPE_YUV_16
+TYPE_YUV_16_PLANAR = _lcms2.TYPE_YUV_16_PLANAR
+TYPE_YUV_16_SE = _lcms2.TYPE_YUV_16_SE
+TYPE_HLS_8 = _lcms2.TYPE_HLS_8
+TYPE_HLS_8_PLANAR = _lcms2.TYPE_HLS_8_PLANAR
+TYPE_HLS_16 = _lcms2.TYPE_HLS_16
+TYPE_HLS_16_PLANAR = _lcms2.TYPE_HLS_16_PLANAR
+TYPE_HLS_16_SE = _lcms2.TYPE_HLS_16_SE
+TYPE_HSV_8 = _lcms2.TYPE_HSV_8
+TYPE_HSV_8_PLANAR = _lcms2.TYPE_HSV_8_PLANAR
+TYPE_HSV_16 = _lcms2.TYPE_HSV_16
+TYPE_HSV_16_PLANAR = _lcms2.TYPE_HSV_16_PLANAR
+TYPE_HSV_16_SE = _lcms2.TYPE_HSV_16_SE
+TYPE_NAMED_COLOR_INDEX = _lcms2.TYPE_NAMED_COLOR_INDEX
+TYPE_XYZ_FLT = _lcms2.TYPE_XYZ_FLT
+TYPE_Lab_FLT = _lcms2.TYPE_Lab_FLT
+TYPE_LabA_FLT = _lcms2.TYPE_LabA_FLT
+TYPE_GRAY_FLT = _lcms2.TYPE_GRAY_FLT
+TYPE_RGB_FLT = _lcms2.TYPE_RGB_FLT
+TYPE_RGBA_FLT = _lcms2.TYPE_RGBA_FLT
+TYPE_ARGB_FLT = _lcms2.TYPE_ARGB_FLT
+TYPE_BGR_FLT = _lcms2.TYPE_BGR_FLT
+TYPE_BGRA_FLT = _lcms2.TYPE_BGRA_FLT
+TYPE_ABGR_FLT = _lcms2.TYPE_ABGR_FLT
+TYPE_CMYK_FLT = _lcms2.TYPE_CMYK_FLT
+TYPE_XYZ_DBL = _lcms2.TYPE_XYZ_DBL
+TYPE_Lab_DBL = _lcms2.TYPE_Lab_DBL
+TYPE_GRAY_DBL = _lcms2.TYPE_GRAY_DBL
+TYPE_RGB_DBL = _lcms2.TYPE_RGB_DBL
+TYPE_BGR_DBL = _lcms2.TYPE_BGR_DBL
+TYPE_CMYK_DBL = _lcms2.TYPE_CMYK_DBL
+TYPE_GRAY_HALF_FLT = _lcms2.TYPE_GRAY_HALF_FLT
+TYPE_RGB_HALF_FLT = _lcms2.TYPE_RGB_HALF_FLT
+TYPE_RGBA_HALF_FLT = _lcms2.TYPE_RGBA_HALF_FLT
+TYPE_CMYK_HALF_FLT = _lcms2.TYPE_CMYK_HALF_FLT
+TYPE_RGBA_HALF_FLT = _lcms2.TYPE_RGBA_HALF_FLT
+TYPE_ARGB_HALF_FLT = _lcms2.TYPE_ARGB_HALF_FLT
+TYPE_BGR_HALF_FLT = _lcms2.TYPE_BGR_HALF_FLT
+TYPE_BGRA_HALF_FLT = _lcms2.TYPE_BGRA_HALF_FLT
+TYPE_ABGR_HALF_FLT = _lcms2.TYPE_ABGR_HALF_FLT
+
+# pixel types
+PT_GRAY = _lcms2.PT_GRAY
+PT_RGB = _lcms2.PT_RGB
+PT_CMY = _lcms2.PT_CMY
+PT_CMYK = _lcms2.PT_CMYK
+PT_YCbCr = _lcms2.PT_YCbCr
+PT_YUV = _lcms2.PT_YUV  # Lu'v'
+PT_XYZ = _lcms2.PT_XYZ
+PT_Lab = _lcms2.PT_Lab
+PT_YUVK = _lcms2.PT_YUVK  # Lu'v'K
+PT_HSV = _lcms2.PT_HSV
+PT_HLS = _lcms2.PT_HLS
+PT_Yxy = _lcms2.PT_Yxy
+PT_MCH1 = _lcms2.PT_MCH1
+PT_MCH2 = _lcms2.PT_MCH2
+PT_MCH3 = _lcms2.PT_MCH3
+PT_MCH4 = _lcms2.PT_MCH4
+PT_MCH5 = _lcms2.PT_MCH5
+PT_MCH6 = _lcms2.PT_MCH6
+PT_MCH7 = _lcms2.PT_MCH7
+PT_MCH8 = _lcms2.PT_MCH8
+PT_MCH9 = _lcms2.PT_MCH9
+PT_MCH10 = _lcms2.PT_MCH10
+PT_MCH11 = _lcms2.PT_MCH11
+PT_MCH12 = _lcms2.PT_MCH12
+PT_MCH13 = _lcms2.PT_MCH13
+PT_MCH14 = _lcms2.PT_MCH14
+PT_MCH15 = _lcms2.PT_MCH15
+PT_LabV2 = _lcms2.PT_LabV2  # Identical to PT_Lab, but using the V2 old encoding
+
+def number_of_channels(pt):
+    if pt == PT_GRAY: return 1
+    elif pt == PT_RGB: return 3
+    elif pt == PT_CMY: return 3
+    elif pt == PT_CMYK: return 4
+    elif pt == PT_YCbCr: return 3
+    elif pt == PT_YUV: return 3
+    elif pt == PT_XYZ: return 3
+    elif pt == PT_Lab: return 3
+    elif pt == PT_YUVK: return 4
+    elif pt == PT_HSV: return 3
+    elif pt == PT_HLS: return 3
+    elif pt == PT_Yxy: return 3
+    elif pt == PT_MCH1: return 1
+    elif pt == PT_MCH2: return 2
+    elif pt == PT_MCH3: return 3
+    elif pt == PT_MCH4: return 4
+    elif pt == PT_MCH5: return 5
+    elif pt == PT_MCH6: return 6
+    elif pt == PT_MCH7: return 7
+    elif pt == PT_MCH8: return 8
+    elif pt == PT_MCH9: return 9
+    elif pt == PT_MCH10: return 10
+    elif pt == PT_MCH11: return 11
+    elif pt == PT_MCH12: return 12
+    elif pt == PT_MCH13: return 13
+    elif pt == PT_MCH14: return 14
+    elif pt == PT_MCH15: return 15
+    elif pt == PT_LabV2: return 3

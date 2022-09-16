@@ -1,86 +1,142 @@
-import pylcms2
+import pyColConv
 
 import numpy as np
 
-def test_pass_nparay_data():
-    """
-    simple test to pass nparay to c-code and manipulate its data
-
-        - a.data is Python buffer object pointing to the data of a
-        - in c PyArg_ParseTuple(args, "y*", &in_buf) receives that as Py_buffer
-        - the .buf member of that struct holds the address
-    """
-    a = np.zeros(5, dtype=np.uint32)
-    print(a)
-
-    itemsize_from_c = pylcms2.dev_get_nparray_as_Py_buffer(a.data)
-
-    print(a)
-    print(itemsize_from_c)
-
-    assert a[0] == 4
-    assert a[1] == 0
-    assert a[2] == 3
-
-    assert itemsize_from_c == 5
 
 def test_get_TYPE_makros():
-    assert pylcms2.TYPE_RGB_8 == 262169
+    """
+    * checks if the member TYPE_RGB_8 (inherited from lcms) is defined
+    * checks its value (which encodes information about that color format)
+    """
+    assert pyColConv.TYPE_RGB_8 == 262169
+
 
 def test_get_channels_bytes_from_type():
+    """
+    test functionality of the 'get_color_space_specs' function
+    """
     try:
-        pylcms2.get_color_space_specs('TYPE_unknown')
+        pyColConv.get_color_space_specs("TYPE_unknown")
     except ValueError:
         pass
     else:
         raise RuntimeError("should be treated as ValueError")
 
-    c, b, f = pylcms2.get_color_space_specs('TYPE_RGB_8')
-    assert (c,b,f) == (3,1,False)
+    # c: number of channels, b: number of bytes per channel, f: is float
+    c, b, f = pyColConv.get_color_space_specs("TYPE_RGB_8")
+    assert (c, b, f) == (3, 1, False)
 
-    c, b, f = pylcms2.get_color_space_specs('TYPE_ARGB_16')
+    c, b, f = pyColConv.get_color_space_specs("TYPE_ARGB_16")
     assert (c, b, f) == (4, 2, False)
 
-    c, b, f = pylcms2.get_color_space_specs('TYPE_CMYK_FLT')
+    c, b, f = pyColConv.get_color_space_specs("TYPE_CMYK_FLT")
     assert (c, b, f) == (4, 4, True)
 
-    c, b, f = pylcms2.get_color_space_specs('TYPE_Lab_DBL')
+    c, b, f = pyColConv.get_color_space_specs("TYPE_Lab_DBL")
     assert (c, b, f) == (3, 8, True)
 
 
 def test_do_transform():
+    """
+    test functionality of the conversion
+
+        1. identity transform SRGB -> SRGB
+        2. RGB white [1.0, 1.0, 1.0] -> Lab ~ [100.0, 0.0, 0.0]
+    """
+
+    # identity transform SRGB -> SRGB
     pix = 2
-    in_data = np.asarray(np.arange(3*pix), dtype=np.uint8)
-    out_data = pylcms2.do_transform(
-        in_prof=pylcms2.PROFILE_SRGB,
+    in_data = np.asarray(np.arange(3 * pix), dtype=np.uint8)
+    out_data = pyColConv.convert(
+        in_prof=pyColConv.PROFILE_SRGB,
         in_Py_buffer=in_data.data,
-        in_fmt='TYPE_RGB_8',
-        out_prof=pylcms2.PROFILE_SRGB,
-        out_fmt='TYPE_RGB_8',
-        intent=pylcms2.INTENT_ABSOLUTE_COLORIMETRIC,
-        dw_flags=0
+        in_fmt="TYPE_RGB_8",
+        out_prof=pyColConv.PROFILE_SRGB,
+        out_fmt="TYPE_RGB_8",
+        intent=pyColConv.INTENT_ABSOLUTE_COLORIMETRIC,
+        dw_flags=0,
     )
-    for i in range(pix*3):
+    for i in range(pix * 3):
         assert in_data[i] == out_data[i]
 
-    in_data = np.asarray([1, 1, 1], dtype='f8')
-    out_data = pylcms2.do_transform(
-        in_prof=pylcms2.PROFILE_SRGB,
+    # RGB white [1.0, 1.0, 1.0] -> Lab ~ [100.0, 0.0, 0.0]
+    in_data = np.asarray([1, 1, 1], dtype="f8")
+    out_data = pyColConv.convert(
+        in_prof=pyColConv.PROFILE_SRGB,
         in_Py_buffer=in_data.data,
-        in_fmt='TYPE_RGB_DBL',
-        out_prof=pylcms2.PROFILE_Lab_D50,
-        out_fmt='TYPE_Lab_DBL',
-        intent=pylcms2.INTENT_ABSOLUTE_COLORIMETRIC,
-        dw_flags=0
+        in_fmt="TYPE_RGB_DBL",
+        out_prof=pyColConv.PROFILE_Lab_D50,
+        out_fmt="TYPE_Lab_DBL",
+        intent=pyColConv.INTENT_ABSOLUTE_COLORIMETRIC,
+        dw_flags=0,
     )
-    out_data = np.frombuffer(out_data, dtype='f8')
+    out_data = np.frombuffer(out_data, dtype="f8")
     assert abs(out_data[0] - 100) < 1e-5
     assert abs(out_data[1]) < 1e-5
     assert abs(out_data[2]) < 1e-5
 
+
+def test_nparray():
+    r=0.6
+    g=0.2
+    b=0.3
+
+    c_ref = np.asarray([13.20973486, 90.42343497, 41.03150964, 36.78644896])
+
+    for (out_fmt, out_fmt_name) in [(pyColConv.TYPE_CMYK_DBL, 'float64'),
+                                    (pyColConv.TYPE_CMYK_FLT, 'float32')]:
+
+        for t in ['f4', 'f8']:
+            c_sRGB = np.asarray([r,g,b], dtype=t)
+            c_CMYK = pyColConv.convert_nparray(
+                in_prof=pyColConv.PROFILE_SRGB,
+                in_array=c_sRGB,
+                in_pixel_type=pyColConv.PT_RGB,
+                out_prof="../data/PSOcoated_v3.icc",
+                out_fmt=out_fmt,
+                intent=pyColConv.INTENT_RELATIVE_COLORIMETRIC,
+                dw_flags=0
+            )
+            assert np.allclose(c_ref, c_CMYK)
+            assert (c_CMYK.dtype.name == out_fmt_name)
+
+        m = 2**8
+        c_sRGB = np.asarray([m*r, m*g, m*b], dtype='u1')
+        c_CMYK = pyColConv.convert_nparray(
+            in_prof=pyColConv.PROFILE_SRGB,
+            in_array=c_sRGB,
+            in_pixel_type=pyColConv.PT_RGB,
+            out_prof="../data/PSOcoated_v3.icc",
+            out_fmt=out_fmt,
+            intent=pyColConv.INTENT_RELATIVE_COLORIMETRIC,
+            dw_flags=0
+        )
+        d = np.max(np.abs(c_ref - c_CMYK))
+        assert d < 0.7
+        assert(c_CMYK.dtype.name == out_fmt_name)
+
+        m = 2 ** 16
+        c_sRGB = np.asarray([m * r, m * g, m * b], dtype='u2')
+        c_CMYK = pyColConv.convert_nparray(
+            in_prof=pyColConv.PROFILE_SRGB,
+            in_array=c_sRGB,
+            in_pixel_type=pyColConv.PT_RGB,
+            out_prof="../data/PSOcoated_v3.icc",
+            out_fmt=out_fmt,
+            intent=pyColConv.INTENT_RELATIVE_COLORIMETRIC,
+            dw_flags=0
+        )
+        d = np.max(np.abs(c_ref - c_CMYK))
+        assert d < 0.014
+        assert (c_CMYK.dtype.name == out_fmt_name)
+
+
+
+
+
 if __name__ == "__main__":
-    pylcms2.useDebugMode()
-    # test_pass_nparay_data()
+    pyColConv.useDebugMode()
     # test_get_TYPE_makros()
     # test_get_channels_bytes_from_type()
-    test_do_transform()
+    # test_do_transform()
+    test_nparray()
