@@ -1,5 +1,4 @@
 import pylcms2
-pylcms2.useDebugMode()
 
 import numpy as np
 
@@ -80,6 +79,7 @@ def test_do_transform():
     assert abs(out_data[2]) < 1e-5
 
 if __name__ == "__main__":
+    pylcms2.useDebugMode()
     # test_pass_nparay_data()
     # test_get_TYPE_makros()
     # test_get_channels_bytes_from_type()
