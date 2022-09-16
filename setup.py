@@ -2,16 +2,16 @@ from setuptools import Extension, setup
 
 setup(
     # Name of your Package
-    name='pylcms2',
+    name='pyColConv',
 
     # Project Version
     version='0.1',
 
     # Description of your Package
-    description='implement color transformations using Little CMS for python3',
+    description='implement color conversion using Little CMS for python3',
 
     # Website for your Project or Github repo
-    url="https://github.com/cimatosa/pylcms2",
+    url="https://github.com/cimatosa/pyColConv",
 
     # Name of the Creator
     author='Richard Hartmann',
@@ -36,7 +36,7 @@ setup(
         Extension(
             name="_lcms2",  # as it would be imported
                             # may include packages/namespaces separated by `.`
-            sources=["./pylcms2/_lcms2.c"], # all sources are compiled into a single binary file
+            sources=["./pyColConv/_lcms2.c"], # all sources are compiled into a single binary file
             libraries = ['lcms2'],
             extra_compile_args = ['-std=gnu99']
         ),
